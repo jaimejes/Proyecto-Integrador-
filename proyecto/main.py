@@ -8,19 +8,19 @@ def main(page: ft.Page):
     page.bgcolor = "#F9F6FB"
     page.padding = 0
 
-    # --- FUNCION BACK (flecha de regresar en AppBar, si la usas) ---
-    def view_pop(view):
-        # Solo hacemos pop si hay más de una vista
+    # Función para regresar vista
+    def view_pop(e):
         if len(page.views) > 1:
             page.views.pop()
             page.update()
 
     page.on_view_pop = view_pop
 
-    # --- CARGAR LOGIN COMO PRIMERA VISTA ---
+    # Cargar Login como primera vista
     page.views.clear()
-    page.views.append(LoginView(page))   # LoginView devuelve un ft.View("/") :contentReference[oaicite:1]{index=1}
+    page.views.append(LoginView(page))
     page.update()
 
 
-ft.app(target=main)
+# ✅ NUEVA FORMA (Flet 0.80+)
+ft.run(main)

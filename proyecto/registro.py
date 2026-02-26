@@ -22,14 +22,20 @@ def RegistroView(page: ft.Page, tipo: str):
     lbl_msg = ft.Text("")
 
     # -------------------------------------------------------------
-    # VALIDACIONES POR CAMPO
+    # VALIDACIONES
     # -------------------------------------------------------------
     def validar_campos():
         valido = True
 
-        # limpiar errores
-        for campo in [txt_nombre, txt_apellido, txt_correo, txt_tel,
-                      txt_usuario, txt_pass, txt_pass2]:
+        for campo in [
+            txt_nombre,
+            txt_apellido,
+            txt_correo,
+            txt_tel,
+            txt_usuario,
+            txt_pass,
+            txt_pass2,
+        ]:
             campo.error_text = None
 
         if not (txt_nombre.value or "").strip():
@@ -63,6 +69,7 @@ def RegistroView(page: ft.Page, tipo: str):
 
         password = (txt_pass.value or "").strip()
         password2 = (txt_pass2.value or "").strip()
+
         if not password:
             txt_pass.error_text = "Ingresa una contraseña"
             valido = False
@@ -73,7 +80,7 @@ def RegistroView(page: ft.Page, tipo: str):
         if not password2:
             txt_pass2.error_text = "Confirma tu contraseña"
             valido = False
-        elif password and password2 and password != password2:
+        elif password != password2:
             txt_pass2.error_text = "Las contraseñas no coinciden"
             valido = False
 
@@ -81,17 +88,17 @@ def RegistroView(page: ft.Page, tipo: str):
         return valido
 
     # -------------------------------------------------------------
-    # IR AL LOGIN (REUTILIZABLE)
+    # IR AL LOGIN
     # -------------------------------------------------------------
     def ir_login():
-        from login import LoginView   # import aquí para evitar ciclo
+        from login import LoginView
         page.views.clear()
         page.views.append(LoginView(page))
         page.go("/")
         page.update()
 
     # -------------------------------------------------------------
-    # REGISTRAR EN LA BD
+    # REGISTRAR
     # -------------------------------------------------------------
     def registrar(e):
         if not validar_campos():
@@ -108,7 +115,7 @@ def RegistroView(page: ft.Page, tipo: str):
             conn = get_connection()
             cursor = conn.cursor()
 
-            # Revisar si el usuario ya existe
+            # Verificar usuario existente
             cursor.execute(
                 "SELECT IdUsuario FROM usuario WHERE NombreUsuario=%s",
                 (usuario,),
@@ -118,14 +125,14 @@ def RegistroView(page: ft.Page, tipo: str):
                 page.update()
                 return
 
-            # Insertar en usuario
+            # Insertar usuario
             cursor.execute(
                 "INSERT INTO usuario (NombreUsuario, Contraseña) VALUES (%s, %s)",
                 (usuario, password),
             )
             id_usuario = cursor.lastrowid
 
-            # Insertar en cliente o empleado
+            # Insertar en tabla correspondiente
             tabla = "cliente" if tipo == "Cliente" else "empleado"
             cursor.execute(
                 f"INSERT INTO {tabla} (Nombre, Apellido, Telefono, Correo, Usuario_IdUsuario) "
@@ -135,9 +142,10 @@ def RegistroView(page: ft.Page, tipo: str):
 
             conn.commit()
 
-            # Aviso + regresar al login
             page.snack_bar = ft.SnackBar(
-                content=ft.Text(f"{tipo} registrado correctamente. Ahora puedes iniciar sesión.")
+                content=ft.Text(
+                    f"{tipo} registrado correctamente. Ahora puedes iniciar sesión."
+                )
             )
             page.snack_bar.open = True
             page.update()
@@ -155,7 +163,6 @@ def RegistroView(page: ft.Page, tipo: str):
             except:
                 pass
 
-    # Botón manual por si quiere cancelar
     def volver_login(e):
         ir_login()
 
@@ -165,7 +172,7 @@ def RegistroView(page: ft.Page, tipo: str):
     contenido = ft.Container(
         expand=True,
         bgcolor="#F9F6FB",
-        alignment=ft.alignment.center,
+        alignment=ft.Alignment(0, 0),  # ✅ corregido
         content=ft.Column(
             [
                 ft.Text("Corallie Bubble", size=26, weight="bold", color="#C86DD7"),
@@ -187,9 +194,12 @@ def RegistroView(page: ft.Page, tipo: str):
                 lbl_msg,
             ],
             spacing=15,
-            horizontal_alignment="center",
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,  # ✅ corregido
             width=400,
         ),
     )
 
-    return ft.View("/registro", controls=[contenido])
+    return ft.View(  # ✅ corregido
+        route="/registro",
+        controls=[contenido],
+    )
